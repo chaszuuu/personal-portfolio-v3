@@ -1,8 +1,36 @@
+export interface GradientStop {
+  offset: string;
+  color: string;
+  opacity?: number;
+}
+
+export interface IconGradient {
+  id: string;
+  cx?: string | number;
+  cy?: string | number;
+  r?: string | number;
+  gradientUnits?: "userSpaceOnUse" | "objectBoundingBox";
+  gradientTransform?: string;
+  stops: GradientStop[];
+}
+
 export interface StackItem {
   label: string;
   hex: string;
   path?: string;
   mono?: string;
+  paths?: {
+    d: string;
+    fill: string;
+  }[];
+  circles?: {
+    cx: number;
+    cy: number;
+    r: number;
+    fill: string;
+  }[];
+  viewBox?: string;
+  gradient?: IconGradient[];
 }
 
 export interface StackGroup {
