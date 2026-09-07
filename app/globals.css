@@ -412,6 +412,9 @@ footer.end{ padding:24px 0 56px; font-family: var(--font-jetbrains-mono), monosp
   z-index: 2;
 }
 
+::view-transition-old(*) { animation: none; opacity: 0; }
+::view-transition-new(*) { animation: none; opacity: 1; }
+
 @keyframes theme-wipe {
   from {
     transform: translateX(-100%);
