@@ -228,7 +228,7 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
   display:flex; align-items:center; justify-content:center; padding:24px;
   opacity:0; pointer-events:none; transition:opacity .18s ease;
 }
-.library-backdrop.open{ opacity:1; pointer-events:auto; }
+.library-backdrop.open{ opacity:1; pointer-events:auto; transition: none; }
 
 .library-panel{
   background:var(--surface); border:1px solid var(--border); border-radius:26px;

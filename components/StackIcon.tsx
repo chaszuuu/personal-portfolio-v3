@@ -2,11 +2,28 @@ import type { StackItem } from "@/lib/types";
 
 export default function StackIcon({ item }: { item: StackItem }) {
   if (item.paths) {
+    const [vbX, vbY, vbW, vbH] = (item.viewBox ?? "0 0 24 24")
+      .split(/\s+/)
+      .map(Number);
+
     return (
       <svg
         viewBox={item.viewBox ?? "0 0 24 24"}
         xmlns="http://www.w3.org/2000/svg"
       >
+        {item.darkBg && (
+          <rect
+            x={vbX + vbW * 0.08}
+            y={vbY + vbH * 0.08}
+            width={vbW * 0.84}
+            height={vbH * 0.84}
+            rx={vbW * 0.84 * 0.22}
+            ry={vbH * 0.84 * 0.22}
+            fill="#ffffff"
+            className="hidden dark:block"
+          />
+        )}
+
         {item.gradient && (
           <defs>
             {item.gradient.map((gradient) =>

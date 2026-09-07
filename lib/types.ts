@@ -36,6 +36,7 @@ export interface StackItem {
   }[];
   viewBox?: string;
   gradient?: IconGradient[];
+  darkBg?: boolean;
 }
 
 export interface StackGroup {

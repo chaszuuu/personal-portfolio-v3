@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { stackGroups } from "@/lib/data";
 import type { StackGroup, StackItem } from "@/lib/types";
 import { withViewTransition } from "@/lib/view-transition";
@@ -13,10 +14,32 @@ function slug(s: string) {
 
 export default function Stack() {
   const [openGroup, setOpenGroup] = useState<StackGroup | null>(null);
+  // Tracks which folder (by name) is actively mid view-transition.
+  // Only THIS folder should get a viewTransitionName — not every closed folder.
+  const [transitioningName, setTransitioningName] = useState<string | null>(null);
 
-  const openFolder = (group: StackGroup) =>
-    withViewTransition(() => setOpenGroup(group));
-  const closeFolder = () => withViewTransition(() => setOpenGroup(null));
+  const openFolder = (group: StackGroup) => {
+    // Commit this BEFORE starting the transition, synchronously, so the
+    // folder button actually has viewTransitionName painted into the "old"
+    // snapshot the browser captures the instant startViewTransition runs.
+    // A plain setState here is too late — React batches it and it wouldn't
+    // land until after the old snapshot was already taken.
+    flushSync(() => setTransitioningName(group.name));
+    withViewTransition(
+      () => setOpenGroup(group),
+      () => setTransitioningName(null)
+    );
+  };
+
+  const closeFolder = () => {
+    if (openGroup) {
+      flushSync(() => setTransitioningName(openGroup.name));
+    }
+    withViewTransition(
+      () => setOpenGroup(null),
+      () => setTransitioningName(null)
+    );
+  };
 
   useEffect(() => {
     if (!openGroup) return;
@@ -43,6 +66,7 @@ export default function Stack() {
               key={group.name}
               group={group}
               isOpen={openGroup?.name === group.name}
+              isTransitioning={transitioningName === group.name}
               onOpen={openFolder}
             />
           ))}
@@ -57,10 +81,12 @@ export default function Stack() {
 function Folder({
   group,
   isOpen,
+  isTransitioning,
   onOpen,
 }: {
   group: StackGroup;
   isOpen: boolean;
+  isTransitioning: boolean;
   onOpen: (group: StackGroup) => void;
 }) {
   return (
@@ -73,7 +99,12 @@ function Folder({
       <span
         className="library-folder"
         style={{
-          viewTransitionName: isOpen ? undefined : `folder-${slug(group.name)}`,
+          // Only the folder actively transitioning gets a viewTransitionName.
+          // Previously every CLOSED folder got one (isOpen ? undefined : name),
+          // which hoisted all of them into their own top-layer snapshot groups —
+          // pulling them out from behind the backdrop's blur/dim entirely.
+          viewTransitionName:
+            !isOpen && isTransitioning ? `folder-${slug(group.name)}` : undefined,
         }}
       >
         <FolderPreview items={group.items} />
@@ -86,21 +117,14 @@ function Folder({
 function FolderPreview({ items }: { items: StackItem[] }) {
   const total = items.length;
 
-  if (total <= 4) {
-    return (
-      <span className={`folder-preview count-${total}`}>
-        {items.map((item, i) => (
-          <span className="folder-preview-cell" key={`${item.label}-${i}`}>
-            <StackIcon item={item} />
-          </span>
-        ))}
-      </span>
-    );
-  }
-
+  // Always render a full 3x3 grid, even with fewer than 9 items. Empty
+  // slots get a visible placeholder tile (not just blank space) so the
+  // 3x3 shape is obvious at a glance, not just structurally true.
   const showOverflow = total > 9;
   const gridItems = showOverflow ? items.slice(0, 8) : items.slice(0, 9);
   const overflowItems = showOverflow ? items.slice(8) : [];
+  const filledCount = gridItems.length + (showOverflow ? 1 : 0);
+  const emptyCount = 9 - filledCount;
 
   return (
     <span className="folder-preview grid-3x3">
@@ -114,6 +138,13 @@ function FolderPreview({ items }: { items: StackItem[] }) {
           <OverflowCluster items={overflowItems} />
         </span>
       )}
+      {Array.from({ length: emptyCount }).map((_, i) => (
+        <span
+          className="folder-preview-cell folder-preview-cell-empty"
+          key={`empty-${i}`}
+          aria-hidden="true"
+        />
+      ))}
     </span>
   );
 }
@@ -144,6 +175,12 @@ function FolderExpanded({
   group: StackGroup;
   onClose: () => void;
 }) {
+  // Pad out to a full 9 slots when there are fewer items, so the grid
+  // always resolves to exactly 3 rows (a 3x3 shape) instead of shrinking
+  // to however few rows the item count needs. With 10+ items the grid
+  // just naturally grows past 3 rows, which is fine and expected.
+  const emptyCount = group.items.length < 9 ? 9 - group.items.length : 0;
+
   return (
     <div
       className="library-backdrop open"
@@ -163,6 +200,12 @@ function FolderExpanded({
                 <StackIcon item={item} />
               </span>
               <span className="library-app-label">{item.label}</span>
+            </div>
+          ))}
+          {Array.from({ length: emptyCount }).map((_, i) => (
+            <div className="library-app library-app-empty" key={`empty-${i}`} aria-hidden="true">
+              <span className="library-app-icon library-app-icon-empty" />
+              <span className="library-app-label">&nbsp;</span>
             </div>
           ))}
         </div>
