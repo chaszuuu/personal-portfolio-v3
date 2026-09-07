@@ -9,26 +9,48 @@ export default function StackIcon({ item }: { item: StackItem }) {
       >
         {item.gradient && (
           <defs>
-            {item.gradient.map((gradient) => (
-              <radialGradient
-                key={gradient.id}
-                id={gradient.id}
-                cx={gradient.cx}
-                cy={gradient.cy}
-                r={gradient.r}
-                gradientUnits={gradient.gradientUnits}
-                gradientTransform={gradient.gradientTransform}
-              >
-                {gradient.stops.map((stop, i) => (
-                  <stop
-                    key={i}
-                    offset={stop.offset}
-                    stopColor={`#${stop.color}`}
-                    stopOpacity={stop.opacity}
-                  />
-                ))}
-              </radialGradient>
-            ))}
+            {item.gradient.map((gradient) =>
+              gradient.type === "linear" ? (
+                <linearGradient
+                  key={gradient.id}
+                  id={gradient.id}
+                  x1={gradient.x1}
+                  y1={gradient.y1}
+                  x2={gradient.x2}
+                  y2={gradient.y2}
+                  gradientUnits={gradient.gradientUnits}
+                  gradientTransform={gradient.gradientTransform}
+                >
+                  {gradient.stops.map((stop, i) => (
+                    <stop
+                      key={i}
+                      offset={stop.offset}
+                      stopColor={`#${stop.color}`}
+                      stopOpacity={stop.opacity}
+                    />
+                  ))}
+                </linearGradient>
+              ) : (
+                <radialGradient
+                  key={gradient.id}
+                  id={gradient.id}
+                  cx={gradient.cx}
+                  cy={gradient.cy}
+                  r={gradient.r}
+                  gradientUnits={gradient.gradientUnits}
+                  gradientTransform={gradient.gradientTransform}
+                >
+                  {gradient.stops.map((stop, i) => (
+                    <stop
+                      key={i}
+                      offset={stop.offset}
+                      stopColor={`#${stop.color}`}
+                      stopOpacity={stop.opacity}
+                    />
+                  ))}
+                </radialGradient>
+              )
+            )}
           </defs>
         )}
 

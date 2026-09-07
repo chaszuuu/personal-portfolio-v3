@@ -6,9 +6,14 @@ export interface GradientStop {
 
 export interface IconGradient {
   id: string;
+  type?: "radial" | "linear";
   cx?: string | number;
   cy?: string | number;
   r?: string | number;
+  x1?: string | number;
+  y1?: string | number;
+  x2?: string | number;
+  y2?: string | number;
   gradientUnits?: "userSpaceOnUse" | "objectBoundingBox";
   gradientTransform?: string;
   stops: GradientStop[];
