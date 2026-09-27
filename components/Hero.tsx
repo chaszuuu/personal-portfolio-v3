@@ -2,19 +2,24 @@ import ThemeToggle from "./ThemeToggle";
 
 export default function Hero() {
   return (
-    <section className="hero ">
-      <div className="kicker">Hello there! I'm</div>
+    <section className="hero">
+      <div className="hero-top">
+        <div className="kicker">Hello there! I'm</div>
 
-      <div className="hero-heading">
         <h1>Charles Vincent Panlilio</h1>
-        <ThemeToggle />
-        <div className="hero-avatar">
+
+        <div className="toggle-slot">
+          <ThemeToggle />
+        </div>
+
+        <div className="hero-avatar hero-avatar-desktop">
           <img src="/xd.jpg" alt="Charles Vincent Panlilio" />
         </div>
-      </div>
-      <div className="meta">
-        <span>Software Developer</span>
-        <span>QA Tester</span>
+
+        <div className="meta">
+          <span>Software Developer</span>
+          <span>QA Tester</span>
+        </div>
       </div>
 
       <div className="hero-grid">
@@ -23,8 +28,6 @@ export default function Hero() {
             I'm an aspiring software developer and QA tester who enjoys building things from end to end. I
             work across the stack, from designing databases and building APIs to creating the interfaces
             that bring everything together — and I care just as much about making sure it actually works.
-
-            
           </p>
           <p className="about text-justify hyphens-auto">
             Most of what I know comes from building real projects, figuring things out along the way, and
@@ -67,6 +70,11 @@ export default function Hero() {
               </svg>
               GitHub
             </a>
+          </div>
+
+          {/* Mobile-only avatar — hidden on desktop/tablet, shown at max-width:520px via CSS */}
+          <div className="hero-avatar hero-avatar-mobile">
+            <img src="/xd2.jfif" alt="Charles Vincent Panlilio" />
           </div>
         </div>
 

@@ -497,8 +497,8 @@ export const stackGroups: StackGroup[] = [
 export const experience: ExperienceEntry[] = [
   {
     role: "IT Support Intern",
-    org: "Pampanga Highschool",
-    when: "Feb\u2013Jun 2026",
+    org: "PAMPANGA HIGHSCHOOL",
+    when: "Feb \u2013 Jun 2026",
     bullets: [
       "Performed hardware maintenance, including Windows 10 reinstallation, network troubleshooting, and fiber optic installation.",
       "Managed and encoded student academic records, enrollment data, and administrative files in the School Management System.",
