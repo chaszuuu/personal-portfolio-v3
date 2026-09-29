@@ -186,7 +186,7 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 
 /* ---- SECTION ---- */
 .section{ padding: 42px 0; }
-.section h2{ font-family: var(--font-manrope), sans-serif; font-size:13.5px; font-weight:600; margin-bottom:18px; }
+.section h2{ font-family: var(--font-syne), sans-serif; font-size:24px; font-weight:600; margin-bottom:18px; }
 
 .section-head{
   display:flex; align-items:baseline; justify-content:space-between;
@@ -474,6 +474,7 @@ body:not(.dark) .library-folder{
   max-width:560px;
   aspect-ratio:1.2;
   margin:44px auto 8px;
+  perspective:1400px;
 }
 .project-card{
   position:absolute;
@@ -488,23 +489,25 @@ body:not(.dark) .library-folder{
   text-align:left;
   background:var(--surface);
   box-shadow:0 14px 34px rgba(0,0,0,0.14);
-  transition:transform .35s cubic-bezier(.22,1,.36,1), opacity .3s ease, box-shadow .3s ease;
+  transition:transform .7s cubic-bezier(.34,1.2,.4,1), opacity .55s ease, box-shadow .5s ease;
   display:flex;
   flex-direction:column;
-  transform:rotate(0deg) translate(0,0) scale(1);
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  transform:rotate(0deg) translate(0,0) scale(1) rotateY(0deg);
 }
 .project-card.active{
   z-index:3;
   opacity:1;
 }
 .project-card.next{
-  transform:rotate(9deg) translate(30%,8%) scale(0.88);
+  transform:rotate(9deg) translate(30%,8%) scale(0.88) rotateY(-22deg);
   z-index:2;
   cursor:pointer;
   opacity:0.8;
 }
 .project-card.prev{
-  transform:rotate(-9deg) translate(-30%,8%) scale(0.88);
+  transform:rotate(-9deg) translate(-30%,8%) scale(0.88) rotateY(22deg);
   z-index:2;
   cursor:pointer;
   opacity:0.8;
@@ -512,7 +515,7 @@ body:not(.dark) .library-folder{
 .project-card.hidden{
   opacity:0;
   pointer-events:none;
-  transform:scale(0.8);
+  transform:scale(0.8) rotateY(0deg);
   z-index:1;
 }
 .project-card:hover{ box-shadow:0 18px 40px rgba(0,0,0,0.18); }
@@ -580,12 +583,9 @@ body:not(.dark) .library-folder{
 .proj-back{
   font-family: var(--font-jetbrains-mono), monospace; font-size:12px; color:var(--muted);
   display:inline-flex; align-items:center; gap:6px;
+  margin-bottom:24px;
 }
 .proj-back:hover{ color:var(--accent); }
-.proj-page-head h1{
-  font-family: var(--font-syne), sans-serif; font-weight:800; font-size:clamp(24px,4vw,32px);
-  letter-spacing:-0.015em; line-height:1.15; margin-top:14px; max-width:20ch;
-}
 
 .proj-grid{
   display:grid;
@@ -625,7 +625,6 @@ body:not(.dark) .library-folder{
   color:var(--muted); background:var(--surface-2);
   border:1px solid var(--border); border-radius:20px; padding:3px 8px;
 }
-.proj-card-desc{ font-size:12.5px; color:var(--muted); line-height:1.5; margin-top:12px; }
 .proj-card-expand{
   display:flex; align-items:center; gap:5px;
   font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--accent); margin-top:12px;
@@ -660,7 +659,142 @@ body:not(.dark) .library-folder{
 .contact-line a:hover{ color:var(--accent); }
 .contact-line span.sep{ margin:0 9px; color:var(--border); }
 
-footer.end{ padding:24px 0 56px; font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--muted); }
+/* ---- CONTACT (closing statement, add near your other section styles) ---- */
+
+.contact-headline{
+  font-family: var(--font-syne), sans-serif;
+  font-weight:800;
+  font-size:clamp(22px, 3.4vw, 30px);
+  letter-spacing:-0.015em;
+  line-height:1.15;
+  margin-bottom:6px;
+}
+
+.contact-subtext{
+  font-size:13.5px;
+  color:var(--muted);
+  margin-bottom:20px;
+  max-width:40ch;
+}
+
+.contact-email-row{
+  display:inline-flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px 12px;
+  max-width:100%;
+  position:relative;
+}
+
+.contact-email{
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--ink);
+  word-break:break-all;
+  min-width:0;
+  padding-bottom:2px;
+}
+.contact-email:hover{ color:var(--accent); border-color:var(--accent); }
+
+.contact-copy-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:26px;
+  height:26px;
+  border-radius:6px;
+  color:var(--muted);
+  flex-shrink:0;
+}
+.contact-copy-btn svg{ width:14px; height:14px; }
+.contact-copy-btn:hover{ background:var(--surface-2); color:var(--accent); }
+
+.contact-copied-note{
+  right:0;
+  top:-22px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size:10.5px;
+  color:var(--accent);
+}
+
+/* ---- FOOTER ---- */
+
+.site-footer{ padding:40px 0 48px; }
+
+.footer-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:20px;
+}
+
+.footer-logo{
+  display:block;
+  height:clamp(38px, 6vw, 52px);
+  width:auto;
+}
+
+.footer-thanks{
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size:10.5px;
+  color:var(--muted);
+  margin-top:8px;
+}
+
+.footer-icons{ display:flex; gap:8px; }
+ 
+.footer-icon{
+  --brand: var(--brand-light);
+  width:34px; height:34px;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border);
+  border-radius:8px;
+  transition:border-color .2s ease, background-color .2s ease;
+}
+.dark .footer-icon{ --brand: var(--brand-dark); }
+ 
+/* Default: grayscale + dimmed. Hover / keyboard focus: the real colors. */
+.footer-icon svg{
+  width:18px; height:18px;
+  filter:grayscale(1);
+  opacity:.55;
+  transition:filter .2s ease, opacity .2s ease;
+}
+.footer-icon:hover,
+.footer-icon:focus-visible{
+  border-color:var(--brand);
+  background-color:color-mix(in srgb, var(--brand) 40%, transparent);
+}
+.footer-icon:hover svg,
+.footer-icon:focus-visible svg{ filter:none; opacity:1; }
+ 
+/* Icons whose fill changes in dark mode (GitHub) */
+.dark .footer-icon path.has-dark{ fill:var(--dark-fill); }
+ 
+/* Touch screens have no hover, so show the colors all the time */
+@media (hover:none){
+  .footer-icon svg{ filter:none; opacity:1; }
+}
+ 
+.footer-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:6px 16px;
+  margin-top:24px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size:10.5px;
+  color:var(--muted);
+}
+.footer-top-link:hover{ color:var(--accent); }
+ 
+@media (max-width:520px){
+  .footer-icon{ width:40px; height:40px; }
+}
 
 /* ---- MODAL ---- */
 .modal-backdrop{

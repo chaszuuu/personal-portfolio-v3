@@ -1,10 +1,29 @@
+"use client";
+
+import { useId } from "react";
 import type { StackItem } from "@/lib/types";
 
 export default function StackIcon({ item }: { item: StackItem }) {
+  // Every folder can render the same icon more than once at a time (the
+  // mobile carousel duplicates whole groups to have enough slides to loop,
+  // while the desktop grid renders its own copy at the same time, just
+  // CSS-hidden rather than removed). SVG gradient ids must be unique across
+  // the whole page, so a fixed id like "css3Linear1" collides with itself
+  // the moment two copies exist in the DOM together. useId() gives each
+  // rendered instance its own unique suffix, so gradients never collide no
+  // matter how many times this icon appears on the page.
+  const uid = useId();
+
   if (item.paths) {
     const [vbX, vbY, vbW, vbH] = (item.viewBox ?? "0 0 24 24")
       .split(/\s+/)
       .map(Number);
+
+    const scopedId = (id: string) => `${id}-${uid}`;
+    const scopedFill = (fill: string) =>
+      fill.startsWith("url(#")
+        ? `url(#${scopedId(fill.slice(5, -1))})`
+        : `#${fill}`;
 
     return (
       <svg
@@ -30,7 +49,7 @@ export default function StackIcon({ item }: { item: StackItem }) {
               gradient.type === "linear" ? (
                 <linearGradient
                   key={gradient.id}
-                  id={gradient.id}
+                  id={scopedId(gradient.id)}
                   x1={gradient.x1}
                   y1={gradient.y1}
                   x2={gradient.x2}
@@ -50,7 +69,7 @@ export default function StackIcon({ item }: { item: StackItem }) {
               ) : (
                 <radialGradient
                   key={gradient.id}
-                  id={gradient.id}
+                  id={scopedId(gradient.id)}
                   cx={gradient.cx}
                   cy={gradient.cy}
                   r={gradient.r}
@@ -77,16 +96,12 @@ export default function StackIcon({ item }: { item: StackItem }) {
             cx={c.cx}
             cy={c.cy}
             r={c.r}
-            fill={c.fill.startsWith("url(") ? c.fill : `#${c.fill}`}
+            fill={scopedFill(c.fill)}
           />
         ))}
 
         {item.paths.map((p, i) => (
-          <path
-            key={i}
-            d={p.d}
-            fill={p.fill.startsWith("url(") ? p.fill : `#${p.fill}`}
-          />
+          <path key={i} d={p.d} fill={scopedFill(p.fill)} />
         ))}
       </svg>
     );
@@ -105,10 +120,7 @@ export default function StackIcon({ item }: { item: StackItem }) {
   }
 
   return (
-    <span
-      className="mono-badge"
-      style={{ background: `#${item.hex}` }}
-    >
+    <span className="mono-badge" style={{ background: `#${item.hex}` }}>
       {item.mono}
     </span>
   );

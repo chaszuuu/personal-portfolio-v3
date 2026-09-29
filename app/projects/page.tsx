@@ -11,20 +11,14 @@ export const metadata: Metadata = {
 export default function ProjectsPage() {
   return (
     <>
-      <section className="section proj-page-head">
+      <section className="section">
         <div className="wrap">
           <Link href="/" className="proj-back">
             ← Back
           </Link>
-          <div className="kicker" style={{ marginTop: 24 }}>
+          <div className="kicker" style={{ marginTop: 16 }}>
             All Projects
           </div>
-          <h1>Everything I&apos;ve shipped, in one place.</h1>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="wrap">
           <ProjectsGrid />
         </div>
       </section>

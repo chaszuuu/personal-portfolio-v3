@@ -124,13 +124,30 @@ export default function Stack() {
     };
   }, [emblaApi]);
 
+  // IMPORTANT: only `transitioningKey` is flushed *before* the transition
+  // starts. `setOpenKey` happens *inside* the withViewTransition callback,
+  // deliberately mirroring closeFolder below.
+  //
+  // Why this ordering matters: document.startViewTransition() snapshots
+  // the DOM as its "before" state the instant it's called. The closed
+  // folder's viewTransitionName is only applied when `!isOpen &&
+  // isTransitioning` — so if `openKey` (which drives `isOpen`) flips to
+  // true before that snapshot is taken, the folder loses its tag before
+  // the browser ever sees it as the transition's starting point, and the
+  // "open" animation has nothing to morph from (it just pops/fades in).
+  // Setting `openKey` inside the callback instead means the "before"
+  // snapshot still has the folder tagged, and only the "after" snapshot
+  // (once openGroup + openKey have both updated) has the panel tagged —
+  // giving the browser a matching pair of source/destination elements.
   const openReal = (group: StackGroup, key: string) => {
     flushSync(() => {
-      setOpenKey(key);
       setTransitioningKey(key);
     });
     withViewTransition(
-      () => setOpenGroup(group),
+      () => {
+        setOpenKey(key);
+        setOpenGroup(group);
+      },
       () => setTransitioningKey(null)
     );
   };

@@ -70,3 +70,22 @@ export interface ModalContent {
   link?: string;
   linkLabel?: string;
 }
+ 
+export interface SocialPath {
+  d: string;
+  fill: string;
+  /** Fill used when the .dark class is active (omit if it stays the same) */
+  darkFill?: string;
+}
+ 
+export interface SocialItem {
+  label: string;
+  href: string;
+  external: boolean;
+  hex: string;
+  /** Hover border/tint color in dark mode (omit if it stays the same) */
+  darkHex?: string;
+  viewBox: string;
+  gradient?: IconGradient[];
+  paths: SocialPath[];
+}
