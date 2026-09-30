@@ -27,6 +27,10 @@ export interface StackItem {
   paths?: {
     d: string;
     fill: string;
+    /** Gaussian blur amount (stdDeviation) applied to just this path */
+    blur?: number;
+    /** Fill used when the .dark class is active (omit if it stays the same) */
+    darkFill?: string;
   }[];
   circles?: {
     cx: number;
@@ -37,6 +41,10 @@ export interface StackItem {
   viewBox?: string;
   gradient?: IconGradient[];
   darkBg?: boolean;
+  /** Path (in the same viewBox) used as an alpha mask — anything outside
+   *  this shape is clipped, even if a blurred path bleeds past it.
+   *  Used by Gemini's soft-blur star effect. */
+  mask?: string;
 }
 
 export interface StackGroup {
@@ -56,10 +64,12 @@ export interface ProjectEntry {
   badge: string;
   title: string;
   gradient: string;
+  logo?: string;
   desc: string;
   sub: string;
   link: string;
   bullets: string[];
+  marker?: string;
 }
 
 export interface ModalContent {

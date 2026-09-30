@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ProjectsGrid from "@/components/ProjectsGrid";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "All Projects — Charles Vincent Panlilio",
@@ -23,9 +24,7 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      <footer className="end">
-        <div className="wrap">© 2026 Charles Vincent Panlilio</div>
-      </footer>
+      <Footer />
     </>
   );
 }

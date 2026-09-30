@@ -37,6 +37,17 @@ a{ color:inherit; text-decoration:none; }
 a:focus-visible, button:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
 button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
 
+::selection{
+  background:rgba(107,156,31,0.18);
+  color:#0B0C0E;
+}
+
+.dark ::selection,
+.dark::selection{
+  background:rgba(166,226,46,0.22);
+  color:#F2F1EC;
+}
+
 .wrap{ max-width:740px; margin:0 auto; padding:0 26px; }
 
 /* ---- HERO ---- */
@@ -61,7 +72,7 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 
 .hero-top,
 .hero-top *{
-  min-width:0;       /* prevents grid/flex children from refusing to shrink */
+  min-width:0;
   max-width:100%;
 }
 .hero-top img{
@@ -84,7 +95,7 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 }
 
 .theme-toggle{
-  align-self:flex-start; /* opts OUT of stretch — stays icon-sized, pinned to top */
+  align-self:flex-start;
   width:34px; height:34px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
   border:1px solid var(--border); border-radius:10px;
@@ -94,14 +105,12 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .theme-toggle:hover{ color:var(--accent); border-color:var(--accent); }
 
 .hero-avatar{
-  width:70px; flex-shrink:0;   /* no align-self override → inherits stretch */
+  width:70px; flex-shrink:0;
   border-radius:14px; overflow:hidden;
   border:1px solid var(--border); background:var(--surface-2);
 }
 .hero-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-/* Mobile-only avatar instance is hidden by default (desktop/tablet show the
-   one inside .hero-top instead). Shown at max-width:520px below. */
 .hero-avatar-mobile{ display:none; }
 
 @media (max-width:520px){
@@ -200,28 +209,31 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .section-link:hover{ color:var(--accent); }
 
 /* ---- STACK: App Library folders, no card wrapper ---- */
-
-/* Desktop/tablet row — hidden on mobile, where the Embla carousel below
-   takes over instead. */
-.stack-carousel-track{
-  display:flex;
-  width:100%;
-  max-width:100%;
-  gap:16px;
-  overflow-x:auto;
-  scroll-snap-type:x proximity;
-  padding:4px 2px 10px;
-  scrollbar-width:none;
-}
-.stack-carousel-track::-webkit-scrollbar{ display:none; }
-.stack-carousel-track-desktop{ display:flex; }
-
-/* ---- Mobile: Embla-driven infinite carousel ---- */
-.stack-embla-viewport{
+/* Embla-driven infinite carousel, drag-only at every screen size —
+   mobile, tablet, and desktop all share the same behavior. Dragging works
+   at every size, including with a mouse. */
+/* Mobile + tablet: drag-only carousel, visible up to 700px. */
+.stack-embla-viewport-mobile{
   overflow:hidden;
   width:100%;
-  display:none; /* shown only on mobile, below */
 }
+@media (min-width:701px){
+  .stack-embla-viewport-mobile{ display:none; }
+}
+
+/* Desktop: its own separate carousel instance, visible from 701px up. */
+.stack-carousel-wrap-desktop{
+  display:none;
+  position:relative;
+}
+@media (min-width:701px){
+  .stack-carousel-wrap-desktop{ display:block; }
+}
+.stack-embla-viewport-desktop{
+  overflow:hidden;
+  width:100%;
+}
+
 .stack-embla-container{
   display:flex;
   margin-left:-16px; /* offsets each slide's padding-left below */
@@ -246,27 +258,35 @@ button{ font:inherit; color:inherit; background:none; border:none; cursor:pointe
 .stack-embla-slide .library-folder-btn{
   width:100%;
 }
-/* While actively dragging, styles must track the finger every frame with
-   NO transition — restarting a .2s transition on every scroll event (many
-   times/sec during a drag) was fighting itself and causing the flicker.
-   The transition only makes sense for the single settle at gesture end. */
+/* While actively dragging, styles must track the finger/mouse every frame
+   with NO transition — restarting a .2s transition on every scroll event
+   (many times/sec during a drag) was fighting itself and causing the
+   flicker. The transition only makes sense for the single settle at
+   gesture end. */
 .stack-dragging .stack-embla-slide{
   transition:none;
 }
 
-@media (max-width:460px){
-  .stack-embla-viewport{ display:block; }
-  .stack-carousel-track-desktop{ display:none; }
+.dark .stack-dark-fill{ fill: var(--dark-fill); }
+
+/* Desktop's carousel gets more room per slide, since it's a fixed-width
+   instance rather than one that also has to serve mobile's peek-width. */
+@media (min-width:701px){
+  .stack-embla-viewport-desktop .stack-embla-slide{ width:170px; }
 }
 
 .library-folder-btn{
+  width:100%;
+}
+/* While actively dragging, styles must track the finger/mouse every frame
+   with NO transition — restarting a .2s transition on every scroll event
+   (many times/sec during a drag) was fighting itself and causing the
+   flicker. The transition only makes sense for the single settle at
+   gesture end. */
+.library-folder-btn{
   display:flex; flex-direction:column; align-items:center; gap:10px;
   flex-shrink:0; scroll-snap-align:start;
-  width:min(26vw, 150px); /* ~4 per row on wide screens, ~3-4 peeking on mobile */
-}
-
-@media (min-width:701px){
-  .library-folder-btn{ width:min(180px, calc((100% - 3 * 16px) / 4)); }
+  width:min(26vw, 150px);
 }
 
 @media (max-width:460px){
@@ -364,6 +384,7 @@ body:not(.dark) .library-folder{
 }
 .dark .library-app-label{ color:#FFFFFF; }
 
+
 /* ---- EXPERIENCE (left-aligned, inline-expand accordion) ---- */
 .timeline{
   position:relative; display:flex; flex-direction:column; gap:12px;
@@ -382,9 +403,6 @@ body:not(.dark) .library-folder{
 .t-item:hover{ border-color:var(--accent); }
 .t-item.open{ border-color:var(--accent); }
 
-/* Timeline node: hollow ring by default, fills solid accent when this
-   entry is expanded — gives the dot a functional meaning instead of just
-   sitting there. A short stub connects it to the card edge. */
 .t-item::before{
   content:""; position:absolute; left:-20px; top:19px; width:10px; height:10px; border-radius:50%;
   background:var(--bg); border:2px solid var(--border); z-index:1;
@@ -418,8 +436,6 @@ body:not(.dark) .library-folder{
 }
 .t-item.open .expand-chevron{ transform:rotate(180deg); }
 
-/* Smooth expand/collapse without a hardcoded max-height, via the
-   grid-template-rows 0fr → 1fr technique. */
 .t-details-wrap{
   display:grid; grid-template-rows:0fr;
   transition:grid-template-rows .25s ease;
@@ -541,6 +557,11 @@ body:not(.dark) .library-folder{
   font-family: var(--font-syne), sans-serif; font-weight:800; font-size:18px; color:#fff;
 }
 .project-card-title{ font-family: var(--font-manrope), sans-serif; font-weight:700; font-size:16px; }
+
+/* logo images inside the project icon tiles (deck + grid) */
+.project-card-icon,
+.proj-card-icon{ overflow:hidden; }
+.project-icon-img{ width:100%; height:100%; object-fit:cover; display:block; }
 .project-card-chips{
   display:flex; flex-wrap:wrap; gap:6px;
   margin-top:12px; flex-shrink:0;
@@ -551,19 +572,14 @@ body:not(.dark) .library-folder{
   border:1px solid var(--border); border-radius:20px;
   padding:3px 9px;
 }
-.project-card-highlights{
+.project-card-desc{
   margin-top:12px; flex:1 1 auto; min-height:0; overflow:hidden;
-  display:flex; flex-direction:column; gap:6px;
+  font-size:12px; color:var(--muted); line-height:1.55;
+  text-align:justify; text-justify:inter-word;
 }
-.project-card-highlights div{
-  font-size:11.5px; color:var(--muted); line-height:1.45;
-  padding-left:13px; position:relative;
-}
-.project-card-highlights div::before{ content:"–"; position:absolute; left:0; color:var(--muted); }
 .project-card-cta{
-  align-self:flex-start;
   display:inline-flex; align-items:center; gap:7px;
-  flex-shrink:0; margin-top:12px;
+  flex-shrink:0;
   background:var(--ink); color:var(--bg);
   border-radius:8px; padding:8px 13px;
   font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; font-weight:600;
@@ -571,6 +587,22 @@ body:not(.dark) .library-folder{
 }
 .project-card-cta svg{ width:14px; height:14px; flex-shrink:0; }
 .project-card-cta:hover{ background:var(--accent); color:var(--bg); }
+
+.project-card-actions{
+  display:flex; align-items:center; flex-wrap:wrap;
+  gap:8px 10px; margin-top:12px; flex-shrink:0;
+}
+.project-marker{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; font-weight:600;
+  letter-spacing:0.02em; color:var(--accent);
+  border:1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius:8px; padding:7px 11px;
+  background:color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.project-marker svg{
+  width:13px; height:13px; flex-shrink:0;
+}
 
 .project-dots{ display:flex; justify-content:center; gap:7px; margin-top:14px; }
 .project-dot{
@@ -588,9 +620,19 @@ body:not(.dark) .library-folder{
 .proj-back:hover{ color:var(--accent); }
 
 .proj-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
-  gap:16px;
+  display:flex; align-items:flex-start; gap:16px;
+}
+/* Each column stacks on its own, so opening a card only pushes down the cards
+   beneath it in the same column, never the other column. */
+.proj-col{
+  flex:1 1 0; min-width:0;
+  display:flex; flex-direction:column; gap:16px;
+}
+/* Single column on small screens: columns dissolve and cards fall back to
+   their original order via the inline `order` style. */
+@media (max-width:575px){
+  .proj-grid{ flex-direction:column; align-items:stretch; }
+  .proj-col{ display:contents; }
 }
 
 .proj-card{
@@ -603,7 +645,7 @@ body:not(.dark) .library-folder{
 
 .proj-card-head{
   display:block; width:100%; text-align:left;
-  padding:18px;
+  padding:18px 18px 0;
 }
 .proj-card-badge{
   display:inline-flex; align-items:center; gap:6px;
@@ -625,11 +667,25 @@ body:not(.dark) .library-folder{
   color:var(--muted); background:var(--surface-2);
   border:1px solid var(--border); border-radius:20px; padding:3px 8px;
 }
+.proj-card-desc{
+  margin-top:14px; padding-top:12px;
+  border-top:1px dashed var(--border);
+  font-size:12.5px; line-height:1.55; color:var(--muted);
+  min-height:calc(4.65em + 13px); /* reserves 3 lines so collapsed cards match in height */
+  text-align:justify; text-justify:inter-word;
+}
 .proj-card-expand{
   display:flex; align-items:center; gap:5px;
-  font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--accent); margin-top:12px;
+  font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--accent);
 }
 .proj-card.open .expand-chevron{ transform:rotate(180deg); }
+
+/* footer row: view/hide details on the left, View Repo on the right.
+   Sits below the bullets, so both move down when the card opens. */
+.proj-card-foot{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; padding:14px 18px 18px;
+}
 
 .proj-details-wrap{
   display:grid; grid-template-rows:0fr;
@@ -640,8 +696,8 @@ body:not(.dark) .library-folder{
 .proj-details{
   overflow:hidden; display:flex; flex-direction:column; gap:9px;
 }
-.proj-card.open .proj-details{ padding-top:2px; padding-bottom:18px; }
-.proj-details .bullet{ color:var(--muted); font-size:13px; line-height:1.5; padding-left:14px; position:relative; }
+.proj-card.open .proj-details{ padding-top:12px; }
+.proj-details .bullet{ color:var(--muted); font-size:13px; line-height:1.5; padding-left:14px; position:relative; text-align:justify; text-justify:inter-word; }
 .proj-details .bullet::before{ content:"–"; position:absolute; left:0; color:var(--muted); }
 .proj-details-link{
   display:inline-flex; align-items:center; gap:6px; margin-top:4px;
@@ -649,6 +705,7 @@ body:not(.dark) .library-folder{
   border:1px solid var(--border); border-radius:7px; padding:8px 12px; align-self:flex-start;
 }
 .proj-details-link:hover{ border-color:var(--accent); }
+
 
 /* ---- CONTACT ---- */
 .contact-line{
@@ -743,7 +800,7 @@ body:not(.dark) .library-folder{
 }
 
 .footer-icons{ display:flex; gap:8px; }
- 
+
 .footer-icon{
   --brand: var(--brand-light);
   width:34px; height:34px;
@@ -753,8 +810,7 @@ body:not(.dark) .library-folder{
   transition:border-color .2s ease, background-color .2s ease;
 }
 .dark .footer-icon{ --brand: var(--brand-dark); }
- 
-/* Default: grayscale + dimmed. Hover / keyboard focus: the real colors. */
+
 .footer-icon svg{
   width:18px; height:18px;
   filter:grayscale(1);
@@ -768,15 +824,13 @@ body:not(.dark) .library-folder{
 }
 .footer-icon:hover svg,
 .footer-icon:focus-visible svg{ filter:none; opacity:1; }
- 
-/* Icons whose fill changes in dark mode (GitHub) */
+
 .dark .footer-icon path.has-dark{ fill:var(--dark-fill); }
- 
-/* Touch screens have no hover, so show the colors all the time */
+
 @media (hover:none){
   .footer-icon svg{ filter:none; opacity:1; }
 }
- 
+
 .footer-bottom{
   display:flex;
   align-items:center;
@@ -791,7 +845,7 @@ body:not(.dark) .library-folder{
   color:var(--muted);
 }
 .footer-top-link:hover{ color:var(--accent); }
- 
+
 @media (max-width:520px){
   .footer-icon{ width:40px; height:40px; }
 }

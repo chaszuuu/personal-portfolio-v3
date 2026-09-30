@@ -25,6 +25,42 @@ export default function StackIcon({ item }: { item: StackItem }) {
         ? `url(#${scopedId(fill.slice(5, -1))})`
         : `#${fill}`;
 
+    const maskId = item.mask ? scopedId("stack-mask") : undefined;
+
+    const renderedPaths = item.paths.map((p, i) => {
+      const path = (
+        <path
+          key={i}
+          d={p.d}
+          fill={scopedFill(p.fill)}
+          className={p.darkFill ? "stack-dark-fill" : undefined}
+          style={
+            p.darkFill
+              ? ({ "--dark-fill": `#${p.darkFill}` } as React.CSSProperties)
+              : undefined
+          }
+        />
+      );
+      if (p.blur === undefined) return path;
+      const filterId = scopedId(`stack-blur-${i}`);
+      return (
+        <g key={i} filter={`url(#${filterId})`}>
+          <defs>
+            <filter
+              id={filterId}
+              x="-60%"
+              y="-60%"
+              width="220%"
+              height="220%"
+            >
+              <feGaussianBlur stdDeviation={p.blur} />
+            </filter>
+          </defs>
+          {path}
+        </g>
+      );
+    });
+
     return (
       <svg
         viewBox={item.viewBox ?? "0 0 24 24"}
@@ -41,6 +77,14 @@ export default function StackIcon({ item }: { item: StackItem }) {
             fill="#ffffff"
             className="hidden dark:block"
           />
+        )}
+
+        {item.mask && maskId && (
+          <defs>
+            <mask id={maskId} maskUnits="userSpaceOnUse">
+              <path d={item.mask} fill="#ffffff" />
+            </mask>
+          </defs>
         )}
 
         {item.gradient && (
@@ -90,19 +134,19 @@ export default function StackIcon({ item }: { item: StackItem }) {
           </defs>
         )}
 
-        {item.circles?.map((c, i) => (
-          <circle
-            key={`c-${i}`}
-            cx={c.cx}
-            cy={c.cy}
-            r={c.r}
-            fill={scopedFill(c.fill)}
-          />
-        ))}
+        <g mask={maskId ? `url(#${maskId})` : undefined}>
+          {item.circles?.map((c, i) => (
+            <circle
+              key={`c-${i}`}
+              cx={c.cx}
+              cy={c.cy}
+              r={c.r}
+              fill={scopedFill(c.fill)}
+            />
+          ))}
 
-        {item.paths.map((p, i) => (
-          <path key={i} d={p.d} fill={scopedFill(p.fill)} />
-        ))}
+          {renderedPaths}
+        </g>
       </svg>
     );
   }

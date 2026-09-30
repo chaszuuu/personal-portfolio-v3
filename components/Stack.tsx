@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import useEmblaCarousel from "embla-carousel-react";
+import type { EmblaCarouselType } from "embla-carousel";
 import { stackGroups } from "@/lib/data";
 import type { StackGroup, StackItem } from "@/lib/types";
 import { withViewTransition } from "@/lib/view-transition";
@@ -12,133 +13,84 @@ function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
-const MOBILE_QUERY = "(max-width: 460px)";
-
 // Embla automatically falls back to loop:false if there aren't enough
-// slides to fill the viewport at least twice over — it's protecting itself
-// from an impossible-looking loop, not a bug. With only a handful of real
-// groups (e.g. 3), we render duplicated copies just for the mobile Embla
-// instance so it always has enough width to actually loop. Embla treats
-// each duplicate as a fully real, independent slide — this is its intended
-// way of handling a short list, not a hack on top of it.
-const MIN_MOBILE_SLIDES = 8;
+// slides to fill the viewport at least twice over. With only a handful of
+// real groups, we render duplicated copies so Embla always has enough
+// width to actually loop. Embla treats each duplicate as a fully real,
+// independent slide — this is its intended way of handling a short list.
+const MIN_SLIDES = 8;
 
-function buildMobileSlides(groups: StackGroup[]) {
+function buildSlides(groups: StackGroup[], instance: string) {
   if (groups.length === 0) return [];
-  const repeat = Math.max(1, Math.ceil(MIN_MOBILE_SLIDES / groups.length));
+  const repeat = Math.max(1, Math.ceil(MIN_SLIDES / groups.length));
   return Array.from({ length: repeat }, (_, copy) =>
-    groups.map((group) => ({ group, key: `${group.name}-${copy}` }))
+    groups.map((group) => ({ group, key: `${instance}-${group.name}-${copy}` }))
   ).flat();
 }
+
+const mobileSlides = buildSlides(stackGroups, "m");
+const desktopSlides = buildSlides(stackGroups, "d");
 
 export default function Stack() {
   const [openGroup, setOpenGroup] = useState<StackGroup | null>(null);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [transitioningKey, setTransitioningKey] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const mobileSlides = buildMobileSlides(stackGroups);
 
-  // Embla owns the loop/drag/swipe mechanics entirely — this replaces every
-  // hand-rolled scroll/rotation/window approach from before. loop:true is a
-  // first-class supported mode here, not a workaround.
-  const [emblaRef, emblaApi] = useEmblaCarousel({
+  // Two fully independent Embla instances, always both mounted — which one
+  // is visible is decided purely by CSS media queries (see globals.css),
+  // the same way your original file toggled a static grid vs. a carousel.
+  // Keeping them separate (rather than one carousel whose slide width
+  // changes at a breakpoint) avoids Embla having to re-measure and resettle
+  // mid-transition, which was the source of the glitching.
+  const [mobileEmblaRef, mobileEmblaApi] = useEmblaCarousel({
     loop: true,
     align: "center",
     containScroll: false,
-    watchDrag: isMobile, // desktop/tablet render a separate plain grid below; only the mobile instance drags
-    duration: 15, // faster snap animation (Embla default is 25, which read as sluggish)
+    watchDrag: true,
+    duration: 15,
+  });
+  const [desktopEmblaRef, desktopEmblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "center",
+    containScroll: false,
+    watchDrag: true,
+    duration: 15,
   });
 
-  // Guarantees the carousel always starts on the first real slide. Without
-  // this, a re-measurement (e.g. from a CSS change affecting slide width —
-  // padding vs. gap, a font loading late, etc.) can cause Embla to settle
-  // on a different resting index than slide 0 after its internal reInit,
-  // which looks like "the first item disappeared" when it's actually just
-  // scrolled one position to the side.
   useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.scrollTo(0, true); // true = jump instantly, no animation
-  }, [emblaApi]);
-
+    mobileEmblaApi?.scrollTo(0, true);
+  }, [mobileEmblaApi]);
   useEffect(() => {
-    const mq = window.matchMedia(MOBILE_QUERY);
-    setIsMobile(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+    desktopEmblaApi?.scrollTo(0, true);
+  }, [desktopEmblaApi]);
 
-  // Drives your existing --stack-scale / --stack-opacity CSS vars from
-  // Embla's own scroll-progress numbers, replacing the old manual
-  // getBoundingClientRect distance math with Embla's built-in tracking.
-  const updateStyles = useCallback(() => {
-    if (!emblaApi) return;
-    const progress = emblaApi.scrollProgress();
-    const snaps = emblaApi.scrollSnapList();
-    const slides = emblaApi.slideNodes();
+  // Drives --stack-scale / --stack-opacity from Embla's own scroll-progress
+  // numbers. Runs once per carousel instance, each scoped to its own DOM
+  // nodes, so the two never interfere with each other.
+  const makeUpdateStyles = useCallback(
+    (api: EmblaCarouselType | undefined) => () => {
+      if (!api) return;
+      const progress = api.scrollProgress();
+      const snaps = api.scrollSnapList();
+      const slideNodes = api.slideNodes();
 
-    snaps.forEach((snap, i) => {
-      const slide = slides[i];
-      if (!slide) return;
-      let diff = snap - progress;
-      // scrollProgress wraps 0..1 with loop enabled; take the shortest
-      // distance around the wrap instead of the raw linear difference.
-      if (diff > 0.5) diff -= 1;
-      if (diff < -0.5) diff += 1;
-      const normalized = Math.min(Math.abs(diff) * snaps.length, 1);
-      slide.style.setProperty("--stack-scale", String(1 - normalized * 0.15));
-      slide.style.setProperty("--stack-opacity", String(1 - normalized * 0.55));
-    });
-  }, [emblaApi]);
+      snaps.forEach((snap, i) => {
+        const slide = slideNodes[i];
+        if (!slide) return;
+        let diff = snap - progress;
+        if (diff > 0.5) diff -= 1;
+        if (diff < -0.5) diff += 1;
+        const normalized = Math.min(Math.abs(diff) * snaps.length, 1);
+        slide.style.setProperty("--stack-scale", String(1 - normalized * 0.15));
+        slide.style.setProperty("--stack-opacity", String(1 - normalized * 0.55));
+      });
+    },
+    []
+  );
 
-  useEffect(() => {
-    if (!emblaApi) return;
-    updateStyles();
-    emblaApi.on("scroll", updateStyles);
-    emblaApi.on("reInit", updateStyles);
-    return () => {
-      emblaApi.off("scroll", updateStyles);
-      emblaApi.off("reInit", updateStyles);
-    };
-  }, [emblaApi, updateStyles]);
+  useCarouselEffects(mobileEmblaApi, makeUpdateStyles);
+  useCarouselEffects(desktopEmblaApi, makeUpdateStyles);
 
-  // Fixes the flicker during swipe: --stack-scale/--stack-opacity update on
-  // every scroll event (many times per second while dragging), and each
-  // update was restarting the .2s CSS transition before the previous one
-  // finished — the browser was constantly interrupting one half-played
-  // animation with another. While a finger is actually down, styles should
-  // track the drag instantly (no transition); the smooth transition only
-  // makes sense for the single settle at the end of the gesture.
-  useEffect(() => {
-    if (!emblaApi) return;
-    const root = emblaApi.rootNode();
-
-    const onPointerDown = () => root.classList.add("stack-dragging");
-    const onSettle = () => root.classList.remove("stack-dragging");
-
-    emblaApi.on("pointerDown", onPointerDown);
-    emblaApi.on("settle", onSettle);
-    return () => {
-      emblaApi.off("pointerDown", onPointerDown);
-      emblaApi.off("settle", onSettle);
-    };
-  }, [emblaApi]);
-
-  // IMPORTANT: only `transitioningKey` is flushed *before* the transition
-  // starts. `setOpenKey` happens *inside* the withViewTransition callback,
-  // deliberately mirroring closeFolder below.
-  //
-  // Why this ordering matters: document.startViewTransition() snapshots
-  // the DOM as its "before" state the instant it's called. The closed
-  // folder's viewTransitionName is only applied when `!isOpen &&
-  // isTransitioning` — so if `openKey` (which drives `isOpen`) flips to
-  // true before that snapshot is taken, the folder loses its tag before
-  // the browser ever sees it as the transition's starting point, and the
-  // "open" animation has nothing to morph from (it just pops/fades in).
-  // Setting `openKey` inside the callback instead means the "before"
-  // snapshot still has the folder tagged, and only the "after" snapshot
-  // (once openGroup + openKey have both updated) has the panel tagged —
-  // giving the browser a matching pair of source/destination elements.
   const openReal = (group: StackGroup, key: string) => {
     flushSync(() => {
       setTransitioningKey(key);
@@ -152,14 +104,16 @@ export default function Stack() {
     );
   };
 
-  // Tap a non-centered slide → Embla scrolls it to center (its own smooth,
-  // loop-aware scrollTo, no custom geometry needed). Tap the centered one →
-  // opens the folder, same as before.
-  const onTapSlide = (group: StackGroup, key: string, index: number) => {
-    if (isMobile && emblaApi) {
-      const selected = emblaApi.selectedScrollSnap();
+  const onTapSlide = (
+    api: EmblaCarouselType | undefined,
+    group: StackGroup,
+    key: string,
+    index: number
+  ) => {
+    if (api) {
+      const selected = api.selectedScrollSnap();
       if (selected !== index) {
-        emblaApi.scrollTo(index);
+        api.scrollTo(index);
         return;
       }
     }
@@ -198,10 +152,8 @@ export default function Stack() {
       <div className="wrap">
         <h2>Stack</h2>
 
-        {/* Mobile: Embla-driven infinite loop carousel. Slides are
-            duplicated (see buildMobileSlides) so Embla always has enough
-            content to loop, even with only a few real groups. */}
-        <div className="stack-embla-viewport" ref={emblaRef}>
+        {/* Mobile + tablet: drag-only carousel, unchanged from before. */}
+        <div className="stack-embla-viewport stack-embla-viewport-mobile" ref={mobileEmblaRef}>
           <div className="stack-embla-container">
             {mobileSlides.map(({ group, key }, index) => (
               <div className="stack-embla-slide" key={key}>
@@ -209,30 +161,68 @@ export default function Stack() {
                   group={group}
                   isOpen={openKey === key}
                   isTransitioning={transitioningKey === key}
-                  onOpen={() => onTapSlide(group, key, index)}
+                  onOpen={() => onTapSlide(mobileEmblaApi, group, key, index)}
                 />
               </div>
             ))}
           </div>
         </div>
 
-        {/* Desktop/tablet: plain static row, unchanged from before, no Embla involved */}
-        <div className="stack-carousel-track stack-carousel-track-desktop">
-          {stackGroups.map((group) => (
-            <Folder
-              key={group.name}
-              group={group}
-              isOpen={openKey === group.name}
-              isTransitioning={transitioningKey === group.name}
-              onOpen={() => openReal(group, group.name)}
-            />
-          ))}
+        {/* Desktop: its own carousel instance, drag-only. */}
+        <div className="stack-carousel-wrap stack-carousel-wrap-desktop">
+          <div className="stack-embla-viewport stack-embla-viewport-desktop" ref={desktopEmblaRef}>
+            <div className="stack-embla-container">
+              {desktopSlides.map(({ group, key }, index) => (
+                <div className="stack-embla-slide" key={key}>
+                  <Folder
+                    group={group}
+                    isOpen={openKey === key}
+                    isTransitioning={transitioningKey === key}
+                    onOpen={() => onTapSlide(desktopEmblaApi, group, key, index)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {openGroup && <FolderExpanded group={openGroup} onClose={closeFolder} />}
     </section>
   );
+}
+
+// Wires up the scroll/reInit/pointerDown/settle listeners for one Embla
+// instance. Pulled out since we now do this twice (mobile + desktop)
+// instead of once.
+function useCarouselEffects(
+  api: EmblaCarouselType | undefined,
+  makeUpdateStyles: (api: EmblaCarouselType | undefined) => () => void
+) {
+  useEffect(() => {
+    if (!api) return;
+    const updateStyles = makeUpdateStyles(api);
+    updateStyles();
+    api.on("scroll", updateStyles);
+    api.on("reInit", updateStyles);
+    return () => {
+      api.off("scroll", updateStyles);
+      api.off("reInit", updateStyles);
+    };
+  }, [api, makeUpdateStyles]);
+
+  useEffect(() => {
+    if (!api) return;
+    const root = api.rootNode();
+    const onPointerDown = () => root.classList.add("stack-dragging");
+    const onSettle = () => root.classList.remove("stack-dragging");
+    api.on("pointerDown", onPointerDown);
+    api.on("settle", onSettle);
+    return () => {
+      api.off("pointerDown", onPointerDown);
+      api.off("settle", onSettle);
+    };
+  }, [api]);
 }
 
 function Folder({
