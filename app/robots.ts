@@ -28,7 +28,7 @@ const SEARCH_AND_FETCH = [
 ];
 
 // Set to false to block training only and stay visible in AI search/answers.
-const BLOCK_AI_SEARCH_AND_FETCH = true;
+const BLOCK_AI_SEARCH_AND_FETCH = false;
 
 export default function robots(): MetadataRoute.Robots {
   const blocked = BLOCK_AI_SEARCH_AND_FETCH

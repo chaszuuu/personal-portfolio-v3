@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, Manrope, Inter, JetBrains_Mono } from "next/font/google";
+import { Syne, Manrope, JetBrains_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -24,25 +24,38 @@ const jetBrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const FAVICON =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B0C0E'/%3E%3Ctext x='16' y='22' font-family='Manrope, sans-serif' font-weight='700' font-size='14' fill='%23A6E22E' text-anchor='middle'%3ECP%3C/text%3E%3C/svg%3E";
+const SITE_URL = "https://charlesvincentpanlilio.vercel.app"; // swap in your real URL after deploying
+const FAVICON = "/projects/frieren.png";
+const OG_IMAGE = "/branding/og-image.png";
+const TITLE = "Charles Vincent Panlilio | Full-Stack & Mobile Developer";
+const DESCRIPTION =
+  "Developer who ships full-stack web and mobile apps. Browse my projects, stack and experience.";
 
 export const metadata: Metadata = {
-  title: "Charles Vincent Panlilio",
-  description:
-    "Full-stack & mobile developer. BS Information Technology, Pampanga State University. Building Yomuzuu, AttachMates, and other projects.",
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
   icons: { icon: FAVICON },
   openGraph: {
     type: "website",
-    title: "Charles Vincent Panlilio",
-    description:
-      "Full-stack & mobile developer. BS Information Technology, Pampanga State University.",
+    url: "/",
+    siteName: "Charles Vincent Panlilio",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "Charles Vincent Panlilio logo",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
-    title: "Charles Vincent Panlilio",
-    description:
-      "Full-stack & mobile developer. BS Information Technology, Pampanga State University.",
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [OG_IMAGE],
   },
 };
 
@@ -54,7 +67,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${syne.variable} ${manrope.variable} ${manrope.variable} ${jetBrainsMono.variable}`}
+        className={`${syne.variable} ${manrope.variable} ${jetBrainsMono.variable}`}
       >
         <Providers>{children}</Providers>
       </body>
