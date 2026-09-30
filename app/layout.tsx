@@ -26,7 +26,7 @@ const jetBrainsMono = JetBrains_Mono({
 
 const SITE_URL = "https://charlesvincentpanlilio.vercel.app"; // swap in your real URL after deploying
 const FAVICON = "/projects/frieren.png";
-const OG_IMAGE = "/branding/og-image.png";
+const OG_IMAGE = "/projects/frieren.png";
 const TITLE = "Charles Vincent Panlilio | Full-Stack & Mobile Developer";
 const DESCRIPTION =
   "Developer who ships full-stack web and mobile apps. Browse my projects, stack and experience.";
