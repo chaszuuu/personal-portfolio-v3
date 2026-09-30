@@ -17,13 +17,6 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
@@ -61,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${syne.variable} ${manrope.variable} ${inter.variable} ${jetBrainsMono.variable}`}
+        className={`${syne.variable} ${manrope.variable} ${manrope.variable} ${jetBrainsMono.variable}`}
       >
         <Providers>{children}</Providers>
       </body>

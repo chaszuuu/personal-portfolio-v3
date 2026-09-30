@@ -26,7 +26,7 @@ html{ scroll-behavior:smooth; }
 body{
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-manrope), sans-serif;
   font-size:14.5px;
   line-height:1.5;
   -webkit-font-smoothing:antialiased;

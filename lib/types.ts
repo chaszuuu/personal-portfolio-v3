@@ -71,6 +71,7 @@ export interface ProjectEntry {
   bullets: string[];
   marker?: string;
   demo?: string;
+  demoNote?: string;
 }
 
 export interface ModalContent {
