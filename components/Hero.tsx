@@ -74,7 +74,7 @@ export default function Hero() {
 
           {/* Mobile-only avatar — hidden on desktop/tablet, shown at max-width:520px via CSS */}
           <div className="hero-avatar hero-avatar-mobile">
-            <img src="/xd2.jfif" alt="Charles Vincent Panlilio" />
+            <img src="/xd2.jpg" alt="Charles Vincent Panlilio" />
           </div>
         </div>
 

@@ -38,14 +38,21 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible{ outline:2px sol
 button{ font:inherit; color:inherit; background:none; border:none; cursor:pointer; }
 
 ::selection{
-  background:rgba(107,156,31,0.18);
+  background:rgba(107,156,31,0.30);
   color:#0B0C0E;
 }
-
 .dark ::selection,
 .dark::selection{
-  background:rgba(166,226,46,0.22);
+  background:rgba(166,226,46,0.35);
   color:#F2F1EC;
+}
+
+button,
+.stack-embla-slide,
+.project-card,
+.project-dots{
+  user-select:none;
+  -webkit-user-select:none;
 }
 
 .wrap{ max-width:740px; margin:0 auto; padding:0 26px; }
@@ -421,15 +428,19 @@ body:not(.dark) .library-folder{
 
 .t-item-head{
   display:block; width:100%; text-align:left;
-  padding:12px 14px; border-radius:10px; overflow:hidden;
+  padding:12px 14px 0; border-radius:10px 10px 0 0; overflow:hidden;
 }
 .t-item .row{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
 .t-item .role{ font-weight:600; font-size:14.5px; font-family: var(--font-manrope), sans-serif; }
 .t-item .when{ font-family: var(--font-jetbrains-mono), monospace; font-size:11px; color:var(--muted); flex-shrink:0; white-space:nowrap; }
 .t-item .org{ font-size:12.5px; color:var(--muted); margin-top:3px; }
-.t-item .expand{
+
+/* footer row: view/hide details sits below the bullets, so it moves down
+   when the card opens (same pattern as the projects grid). */
+.t-item-foot{ padding:10px 14px 12px; }
+.t-item-expand{
   display:flex; align-items:center; gap:5px;
-  font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--accent); margin-top:8px;
+  font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--accent);
 }
 .expand-chevron{
   display:inline-block; transition:transform .2s ease; font-size:12px; line-height:1;
@@ -446,7 +457,7 @@ body:not(.dark) .library-folder{
   overflow:hidden; display:flex; flex-direction:column; gap:9px;
   padding-top:0;
 }
-.t-item.open .t-details{ padding-top:2px; padding-bottom:10px; }
+.t-item.open .t-details{ padding-top:12px; padding-bottom:0; }
 .t-details div{ color:var(--muted); font-size:13px; line-height:1.5; padding-left:14px; position:relative; }
 .t-details div::before{ content:"–"; position:absolute; left:0; color:var(--muted); }
 
@@ -587,6 +598,15 @@ body:not(.dark) .library-folder{
 }
 .project-card-cta svg{ width:14px; height:14px; flex-shrink:0; }
 .project-card-cta:hover{ background:var(--accent); color:var(--bg); }
+/* outlined variant, used for View Repo when a project also has View Site */
+.project-card-cta.secondary{
+  background:transparent; color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--border);
+}
+.project-card-cta.secondary:hover{
+  background:transparent; color:var(--accent);
+  box-shadow:inset 0 0 0 1px var(--accent);
+}
 
 .project-card-actions{
   display:flex; align-items:center; flex-wrap:wrap;
@@ -630,7 +650,7 @@ body:not(.dark) .library-folder{
 }
 /* Single column on small screens: columns dissolve and cards fall back to
    their original order via the inline `order` style. */
-@media (max-width:575px){
+@media (max-width:720px){
   .proj-grid{ flex-direction:column; align-items:stretch; }
   .proj-col{ display:contents; }
 }
@@ -683,9 +703,37 @@ body:not(.dark) .library-folder{
 /* footer row: view/hide details on the left, View Repo on the right.
    Sits below the bullets, so both move down when the card opens. */
 .proj-card-foot{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:10px; padding:14px 18px 18px;
+  display:flex; flex-direction:column; gap:10px;
+  padding:14px 18px 18px;
 }
+.proj-card-foot-row{
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:10px;
+}
+.proj-card-links{ display:flex; align-items:center; gap:8px; margin-left:auto; }
+.proj-card-foot .project-card-note{ flex-basis:auto; }
+
+/* Tablet + desktop: one line, never wraps. View Repo shrinks to an icon when
+   there is also a View Site. Phones (single column) keep the wrapping row. */
+@media (min-width:721px){
+  .proj-card-foot-row{ flex-wrap:nowrap; gap:8px; }
+  .proj-card-expand{ white-space:nowrap; flex-shrink:0; }
+  .proj-card-links{ gap:6px; }
+  .proj-card-links .project-card-cta{ padding:8px 11px; white-space:nowrap; }
+  .proj-card-links .project-card-cta.secondary{ position:relative; padding:9px; }
+  .proj-card-links .project-card-cta.secondary .cta-label{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap;
+  }
+}
+
+/* small hint under the buttons (deck actions row + grid footer row) */
+.project-card-note{
+  flex-basis:100%;
+  display:flex; align-items:center; gap:5px;
+  font-family: var(--font-jetbrains-mono), monospace; font-size:10px; color:var(--muted);
+}
+.project-card-note svg{ width:11px; height:11px; flex-shrink:0; }
 
 .proj-details-wrap{
   display:grid; grid-template-rows:0fr;
@@ -958,3 +1006,34 @@ body:not(.dark) .library-folder{
   .marquee-row{ flex-direction:column; gap:6px; }
   .marquee-label{ width:auto; }
 }
+
+/* ---- ERROR PAGES (not-found + error) ---- */
+.error-page{
+  min-height:100vh; min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center;
+  gap:14px; padding-top:48px; padding-bottom:48px;
+}
+.error-badge{
+  display:inline-flex; align-items:center;
+  font-family: var(--font-jetbrains-mono), monospace; font-size:9.5px;
+  letter-spacing:0.04em; text-transform:uppercase;
+  border:1px solid var(--border); border-radius:20px;
+  padding:5px 11px; color:var(--muted); background:var(--surface);
+}
+.error-code{
+  font-family: var(--font-syne), sans-serif; font-weight:800;
+  font-size:clamp(84px, 22vw, 168px); line-height:0.9; letter-spacing:-0.04em;
+  padding-right:0.04em; /* cancels the trailing negative letter-spacing so the digits sit dead centre */
+  color:var(--ink);
+}
+.error-zero{ color:var(--accent); }
+.error-title{
+  font-family: var(--font-syne), sans-serif; font-weight:600;
+  font-size:clamp(22px, 4vw, 28px);
+}
+.error-text{ color:var(--muted); font-size:14px; max-width:44ch; margin:0 auto; }
+.error-digest{
+  font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--muted);
+}
+.error-actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:8px; }

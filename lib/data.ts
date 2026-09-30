@@ -559,6 +559,8 @@ export const projects: ProjectEntry[] = [
     desc: "Manga reader that pulls chapters from multiple sources, syncs reading progress across devices, and deploys through a Git CI/CD pipeline.",
     sub: "React · Flask · Supabase · Playwright",
     link: "https://github.com/chaszuuu/yomuzuu",
+    demo: "https://yomuzuu.onrender.com",
+    demoNote: "First load may take a moment (free hosting)",
     bullets: [
       "MangaFreak is the primary chapter source, MangaDex fills the gaps, and Asura covers manhwa, with automatic fallback when a source fails.",
       "Guests keep bookmarks locally; on login they migrate to Supabase and sync across devices, protected by row-level security.",

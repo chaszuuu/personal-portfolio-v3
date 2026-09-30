@@ -70,6 +70,7 @@ export interface ProjectEntry {
   link: string;
   bullets: string[];
   marker?: string;
+  demo?: string;
 }
 
 export interface ModalContent {
