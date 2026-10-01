@@ -1046,3 +1046,65 @@ body:not(.dark) .library-folder{
   font-family: var(--font-jetbrains-mono), monospace; font-size:10.5px; color:var(--muted);
 }
 .error-actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-top:8px; }
+
+/* ===== PHONE FIXES ===== */
+@media (max-width:520px){
+
+  /* Deck: height now comes from the cards, not aspect-ratio.
+     All cards share one grid cell, so every card stretches to the
+     tallest one (same size, no jumping). */
+  .project-stack{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    aspect-ratio:auto;
+    margin:44px auto 0;
+    padding-bottom:32px;
+  }
+  .project-card{
+    position:relative;
+    inset:auto;
+    grid-area:1 / 1;
+    margin:0 auto;
+    height:auto;
+    aspect-ratio:auto;
+    padding:28px 16px 16px;
+  }
+  .project-dots{ position:relative; z-index:5; }
+
+  /* Deck buttons: always one line, footnote drops to its own row */
+  .project-card-actions{ flex-wrap:wrap; gap:8px; }
+  .project-card-actions .project-card-cta{
+    flex:1 1 0;
+    min-width:0;
+    justify-content:center;
+    gap:5px;
+    padding:8px 6px;
+    white-space:nowrap;
+  }
+
+  /* Justified text makes big word gaps on narrow cards */
+  .project-card-desc,
+  .proj-card-desc{ text-align:left; }
+}
+
+/* All Projects page: one line on phones, same as tablet/desktop.
+   view details | View Site | [GitHub icon] */
+@media (max-width:720px){
+  .proj-card-foot-row{ flex-wrap:nowrap; gap:8px; }
+  .proj-card-expand{ white-space:nowrap; flex-shrink:0; }
+  .proj-card-links{ gap:6px; margin-left:auto; flex-shrink:0; }
+  .proj-card-links .project-card-cta{ padding:8px 11px; white-space:nowrap; }
+
+  /* View Repo becomes icon-only when there is also a View Site */
+  .proj-card-links .project-card-cta.secondary{ position:relative; padding:9px; }
+  .proj-card-links .project-card-cta.secondary .cta-label{
+    position:absolute; width:1px; height:1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap;
+  }
+}
+
+/* Very small phones */
+@media (max-width:340px){
+  .project-card-actions .project-card-cta svg{ display:none; }
+  .proj-card-links .project-card-cta:not(.secondary) svg{ display:none; }
+}
